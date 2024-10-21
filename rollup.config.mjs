@@ -27,12 +27,15 @@ const createConfig = (input, additionalPlugins = []) => ({
 const copyPlugin = copy({
     targets: [
         { src: 'manifest.json', dest: 'dist' },
-        { src: 'src/sidepanel/index.html', dest: 'dist/src/sidepanel/' }
+        { src: 'src/sidepanel/index.html', dest: 'dist/src/sidepanel/' },
+        { src: 'src/sidepanel/styles.css', dest: 'dist/src/sidepanel/' }
     ]
 });
 
 export default [
     createConfig('src/background/service_worker.js'),
     createConfig('src/scripts/extract_content.js'),
+    createConfig('src/scripts/splitter.js'),
+    createConfig('src/scripts/vector_store.js'),
     createConfig('src/sidepanel/index.js', [copyPlugin]),
 ];

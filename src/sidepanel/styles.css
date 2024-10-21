@@ -1,0 +1,133 @@
+:root {
+    /* Colors */
+    --md-sys-color-primary: rgb(211 188 253);
+    --md-sys-color-on-primary: rgb(56 38 92);
+    --md-sys-color-primary-container: rgb(79 61 116);
+    --md-sys-color-on-primary-container: rgb(235 221 255);
+    --md-sys-color-secondary: rgb(205 194 219);
+    --md-sys-color-on-secondary: rgb(52 45 64);
+    --md-sys-color-secondary-container: rgb(75 67 88);
+    --md-sys-color-on-secondary-container: rgb(233 222 248);
+    --md-sys-color-tertiary: rgb(240 183 197);
+    --md-sys-color-on-tertiary: rgb(74 37 48);
+    --md-sys-color-tertiary-container: rgb(100 59 70);
+    --md-sys-color-on-tertiary-container: rgb(255 217 225);
+    --md-sys-color-error: rgb(255 180 171);
+    --md-sys-color-on-error: rgb(105 0 5);
+    --md-sys-color-error-container: rgb(147 0 10);
+    --md-sys-color-on-error-container: rgb(255 218 214);
+    --md-sys-color-background: rgb(21 18 24);
+    --md-sys-color-on-background: rgb(231 224 232);
+    --md-sys-color-surface: rgb(21 18 24);
+    --md-sys-color-on-surface: rgb(231 224 232);
+    --md-sys-color-surface-variant: rgb(73 69 78);
+    --md-sys-color-on-surface-variant: rgb(203 196 207);
+    --md-sys-color-outline: rgb(148 143 153);
+    --md-sys-color-shadow: rgb(0 0 0);
+    --md-sys-color-inverse-surface: rgb(231 224 232);
+    --md-sys-color-inverse-on-surface: rgb(50 47 53);
+    --md-sys-color-inverse-primary: rgb(104 84 142);
+    --md-sys-color-surface-dim: rgb(21 18 24);
+    --md-sys-color-surface-bright: rgb(59 56 62);
+    --md-sys-color-surface-container-lowest: rgb(15 13 19);
+    --md-sys-color-surface-container-low: rgb(29 27 32);
+    --md-sys-color-surface-container: rgb(33 31 36);
+    --md-sys-color-surface-container-high: rgb(44 41 47);
+    --md-sys-color-surface-container-highest: rgb(54 52 58);
+
+    /* Shape */
+    --md-sys-shape-corner-extra-small: 4px;
+    --md-sys-shape-corner-small: 8px;
+    --md-sys-shape-corner-medium: 12px;
+    --md-sys-shape-corner-large: 16px;
+    --md-sys-shape-corner-extra-large: 28px;
+    --md-sys-shape-corner-full: 9999px;
+}
+
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: var(--md-sys-color-surface-container-lowest);
+    margin: 0;
+    display: flex;
+    height: 100vh;
+    font-size: medium;
+}
+
+.warning-text {
+    color: var(--md-sys-color-on-surface-variant);
+    font-size: small;
+    display: flex;
+    justify-content: center;
+}
+
+.chat-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 16px;
+    max-width: 940px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    margin-bottom: 16px;
+    scrollbar-width: none;
+}
+
+.chat-messages::-webkit-scrollbar {
+    display: none;
+}
+
+.chat-message {
+    background-color: var(--md-sys-color-surface-container);
+    color: var(--md-sys-color-on-surface);
+    margin-bottom: 16px;
+    padding: 10px 16px;
+    border-radius: var(--md-sys-shape-corner-large);
+    max-width: 60%;
+    word-wrap: break-word;
+}
+
+.chat-message.user {
+    align-self: flex-end;
+    margin-left: auto;
+}
+
+.chat-message.bot {
+    align-self: flex-start;
+    margin-right: auto;
+}
+
+.chat-input-area {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    padding: 4px;
+    background-color: var(--md-sys-color-surface-container);
+    border-radius: var(--md-sys-shape-corner-extra-large);
+}
+
+md-outlined-text-field {
+    flex-grow: 1;
+    --md-outlined-field-outline-color: transparent;
+    --md-outlined-field-container-shape: var(--md-sys-shape-corner-extra-large);
+    --md-outlined-field-focus-label-text-color: transparent;
+    --md-outlined-field-focus-outline-color: transparent;
+    --md-outlined-field-hover-outline-color: transparent;
+    --md-outlined-field-input-text-color: var(--md-sys-color-on-surface);
+}
+
+md-filled-button {
+    --md-filled-button-container-shape: var(--md-sys-shape-corner-full);
+    --md-filled-button-container-color: var(--md-sys-color-primary);
+    min-width: 56px;
+    height: 56px;
+    padding: 0;
+    align-items: center;
+    justify-content: center;
+}

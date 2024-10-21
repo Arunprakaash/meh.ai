@@ -57,7 +57,7 @@ async function initializeModel() {
 
 async function getEmbeddings(sentences) {
     const model = await initializeModel();
-    return await model.embed(sentences);;
+    return await model.embed(sentences);
 }
 
 initializeModel();
