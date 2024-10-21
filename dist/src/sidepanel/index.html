@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>My Extension Sidepanel</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+
+        #textInput {
+            width: 100%;
+            height: 100px;
+            margin-bottom: 10px;
+        }
+
+        #result {
+            margin-top: 20px;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+
+<body>
+    <h2>Get Embeddings</h2>
+    <textarea id="textInput" placeholder="Enter text here..."></textarea>
+    <button id="getEmbeddingsButton">Get Embeddings</button>
+    <div id="result"></div>
+
+    <script src="./index.js"></script>
+</body>
+
+</html>

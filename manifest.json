@@ -1,6 +1,6 @@
 {
     "manifest_version": 3,
-    "name": "Murmux",
+    "name": "Murmux.ai",
     "version": "0.0.1",
     "description": "brings a playful twist to page interaction, letting users frolic through questions and content with ease.",
     "permissions": [
@@ -16,7 +16,10 @@
         "service_worker": "src/background/service_worker.js",
         "type": "module"
     },
+    "side_panel": {
+        "default_path": "src/sidepanel/index.html"
+    },
     "action": {
-        "default_title": "Murmux"
+        "default_title": "Murmux.ai"
     }
 }
