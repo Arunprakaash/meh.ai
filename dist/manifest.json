@@ -1,0 +1,22 @@
+{
+    "manifest_version": 3,
+    "name": "Murmux",
+    "version": "0.0.1",
+    "description": "brings a playful twist to page interaction, letting users frolic through questions and content with ease.",
+    "permissions": [
+        "tabs",
+        "scripting",
+        "sidePanel",
+        "storage"
+    ],
+    "host_permissions": [
+        "<all_urls>"
+    ],
+    "background": {
+        "service_worker": "src/background/service_worker.js",
+        "type": "module"
+    },
+    "action": {
+        "default_title": "Murmux"
+    }
+}
