@@ -16,9 +16,7 @@ function displayMessage(message, type = 'bot', clearPrevious = false) {
     }
     const messageElement = document.createElement('div');
     messageElement.classList.add('chat-message', type);
-
     messageElement.innerHTML = marked(message);
-
     chatMessages.appendChild(messageElement);
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
@@ -32,21 +30,16 @@ function setLoadingState(isLoading) {
 
 async function sendMessage() {
     const userMessage = chatInput.value.trim();
-    if (!userMessage) return;
-
-    displayMessage(userMessage, 'user');
-    chatInput.value = '';
-
-    if (!embeddingIndex) {
-        displayMessage("Sorry, the content hasn't been processed yet. Please wait a moment and try again.");
+    if (!userMessage || !embeddingIndex) {
+        displayMessage(!embeddingIndex ? "Sorry, the content hasn't been processed yet. Please wait a moment and try again." : "");
         return;
     }
 
+    displayMessage(userMessage, 'user');
+    chatInput.value = '';
     setLoadingState(true);
-    displayMessage("Searching for relevant information...");
 
     try {
-
         const context = await searchIndex(embeddingIndex, userMessage, 2);
         const prompt = `You are an assistant for question-answering tasks. 
         Use the following pieces of retrieved context to answer the question. 
@@ -55,14 +48,15 @@ async function sendMessage() {
         Question: ${userMessage}
         Context: ${context}
         Answer:`;
+
         const session = await ai.languageModel.create();
         const response = await session.prompt(prompt);
-        setLoadingState(false);
         displayMessage(response);
     } catch (error) {
-        setLoadingState(false);
         console.error('Error processing query:', error);
         displayMessage("I'm sorry, but I encountered an error while processing your query. Please try again.");
+    } finally {
+        setLoadingState(false);
     }
 }
 
@@ -72,7 +66,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (event.key === 'Enter') sendMessage();
     });
 
-    displayMessage("Welcome! I'm ready to help you with any questions about the page content.");
 });
 
 if (typeof chrome !== 'undefined' && chrome.storage) {
@@ -86,23 +79,23 @@ if (typeof chrome !== 'undefined' && chrome.storage) {
 }
 
 async function onContentChange(newContent) {
-    if (pageContent === newContent) return;
-    pageContent = newContent;
-
-    if (!newContent) {
-        displayMessage("There's no content to process.");
+    if (pageContent === newContent || !newContent) {
+        !newContent && displayMessage("There's no content to process.");
         return;
     }
+
+    pageContent = newContent;
     setLoadingState(true);
     displayMessage('Processing content...', 'bot', true);
+
     try {
         const chunks = await getChunks(newContent);
         embeddingIndex = await createIndex(chunks);
-        setLoadingState(false);
         displayMessage("Content processed and indexed. You can now ask questions about the page.", 'bot', true);
     } catch (error) {
-        setLoadingState(false);
         console.error('Error processing content:', error);
         displayMessage("An error occurred while processing the content. Please try again.", 'bot', true);
+    } finally {
+        setLoadingState(false);
     }
 }
