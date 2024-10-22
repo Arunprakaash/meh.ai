@@ -50,19 +50,23 @@ async function sendMessage() {
         Answer:`;
 
         const session = await ai.languageModel.create();
-        const response = await session.prompt(prompt);
-
+        // Create a new message element for the bot's response
         const botMessageElement = document.createElement('div');
         botMessageElement.classList.add('chat-message', 'bot');
         chatMessages.appendChild(botMessageElement);
 
-        let displayedResponse = '';
-        const words = response.split(' ');
-        for (let i = 0; i < words.length; i++) {
-            displayedResponse += words[i] + ' ';
-            botMessageElement.innerHTML = marked(displayedResponse);
+        // Stream the response
+        const stream = session.promptStreaming(prompt);
+        let result = '';
+        let previousLength = 0;
+
+        for await (const chunk of stream) {
+            const newContent = chunk.slice(previousLength);
+            previousLength = chunk.length;
+            result += newContent;
+            botMessageElement.innerHTML = marked(result);
             chatMessages.scrollTop = chatMessages.scrollHeight;
-            await new Promise(resolve => setTimeout(resolve, 10));
+
         }
     } catch (error) {
         console.error('Error processing query:', error);
