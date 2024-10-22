@@ -107,7 +107,7 @@ body {
 }
 
 .send-button {
-    background: var(--accent-primary);
+    background: black;
     color: white;
     border: none;
     border-radius: 0.5rem;
@@ -144,7 +144,7 @@ body {
     height: 20px;
     border: 2px solid white;
     border-radius: 50%;
-    border-top-color: var(--accent-primary);
+    border-top-color: black;
     animation: spin 1s linear infinite;
 }
 
