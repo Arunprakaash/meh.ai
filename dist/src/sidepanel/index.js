@@ -26598,7 +26598,19 @@ async function sendMessage() {
 
         const session = await ai.languageModel.create();
         const response = await session.prompt(prompt);
-        displayMessage(response);
+
+        const botMessageElement = document.createElement('div');
+        botMessageElement.classList.add('chat-message', 'bot');
+        chatMessages.appendChild(botMessageElement);
+
+        let displayedResponse = '';
+        const words = response.split(' ');
+        for (let i = 0; i < words.length; i++) {
+            displayedResponse += words[i] + ' ';
+            botMessageElement.innerHTML = marked(displayedResponse);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            await new Promise(resolve => setTimeout(resolve, 10));
+        }
     } catch (error) {
         console.error('Error processing query:', error);
         displayMessage("I'm sorry, but I encountered an error while processing your query. Please try again.");
