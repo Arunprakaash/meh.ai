@@ -28,6 +28,76 @@ function setLoadingState(isLoading) {
     sendButton.querySelector('svg').style.display = isLoading ? 'none' : 'block';
 }
 
+async function tryConnectToWorker(prompt, botMessageElement) {
+    return new Promise((resolve, reject) => {
+        try {
+            const port = chrome.runtime.connect({ name: 'streamingResponse' });
+            let result = '';
+
+            port.onMessage.addListener(function messageHandler(message) {
+                switch (message.type) {
+                    case 'chunk':
+                        result += message.content;
+                        botMessageElement.innerHTML = marked(result);
+                        chatMessages.scrollTop = chatMessages.scrollHeight;
+                        break;
+                    case 'done':
+                        port.disconnect();
+                        resolve();
+                        break;
+                    case 'error':
+                        port.disconnect();
+                        reject(new Error(message.error));
+                        break;
+                }
+            });
+
+            port.onDisconnect.addListener(() => {
+                console.log('Port disconnected');
+            });
+
+            // Start streaming
+            port.postMessage({
+                action: 'startStreaming',
+                prompt: prompt
+            });
+        } catch (error) {
+            reject(error);
+        }
+    });
+}
+
+async function fallbackToMessagePassing(prompt, botMessageElement) {
+    return new Promise((resolve, reject) => {
+        let result = '';
+
+        chrome.runtime.sendMessage({
+            action: 'streamingFallback',
+            prompt: prompt
+        }, function messageHandler(message) {
+            if (chrome.runtime.lastError) {
+                reject(chrome.runtime.lastError);
+                return;
+            }
+
+            switch (message.type) {
+                case 'chunk':
+                    result += message.content;
+                    botMessageElement.innerHTML = marked(result);
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                    // Keep listening for more messages
+                    return true;
+                case 'done':
+                    resolve();
+                    break;
+                case 'error':
+                    reject(new Error(message.error));
+                    break;
+            }
+        });
+    });
+}
+
 async function sendMessage() {
     const userMessage = chatInput.value.trim();
     if (!userMessage || !embeddingIndex) {
@@ -49,25 +119,20 @@ async function sendMessage() {
         Context: ${context}
         Answer:`;
 
-        const session = await ai.languageModel.create();
         // Create a new message element for the bot's response
         const botMessageElement = document.createElement('div');
         botMessageElement.classList.add('chat-message', 'bot');
         chatMessages.appendChild(botMessageElement);
 
-        // Stream the response
-        const stream = session.promptStreaming(prompt);
-        let result = '';
-        let previousLength = 0;
-
-        for await (const chunk of stream) {
-            const newContent = chunk.slice(previousLength);
-            previousLength = chunk.length;
-            result += newContent;
-            botMessageElement.innerHTML = marked(result);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-
+        try {
+            // Try connection-based streaming first
+            await tryConnectToWorker(prompt, botMessageElement);
+        } catch (connectionError) {
+            console.log('Connection failed, falling back to message passing:', connectionError);
+            // Fall back to message-based communication
+            await fallbackToMessagePassing(prompt, botMessageElement);
         }
+
     } catch (error) {
         console.error('Error processing query:', error);
         displayMessage("I'm sorry, but I encountered an error while processing your query. Please try again.");
@@ -81,7 +146,6 @@ document.addEventListener('DOMContentLoaded', () => {
     chatInput.addEventListener('keydown', (event) => {
         if (event.key === 'Enter') sendMessage();
     });
-
 });
 
 if (typeof chrome !== 'undefined' && chrome.storage) {

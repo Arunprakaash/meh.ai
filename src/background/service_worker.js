@@ -2,6 +2,16 @@ import * as use from '@tensorflow-models/universal-sentence-encoder';
 import * as tf from '@tensorflow/tfjs';
 let model;
 let modelLoading;
+let languageModelSession;
+
+// Ensure service worker stays active
+self.addEventListener('install', (event) => {
+    event.waitUntil(self.skipWaiting());
+});
+
+self.addEventListener('activate', (event) => {
+    event.waitUntil(self.clients.claim());
+});
 
 chrome.sidePanel
     .setPanelBehavior({ openPanelOnActionClick: true })
@@ -23,7 +33,6 @@ async function extractPageContent(tabId) {
 
 async function initializeModel() {
     if (model) return model;
-
     if (modelLoading) return modelLoading;
 
     modelLoading = (async () => {
@@ -60,7 +69,56 @@ async function getEmbeddings(sentences) {
     return await model.embed(sentences);
 }
 
-initializeModel();
+async function initializeLanguageModel() {
+    if (!languageModelSession) {
+        languageModelSession = await ai.languageModel.create();
+    }
+    return languageModelSession;
+}
+
+async function handleStreamingResponse(prompt, port) {
+    try {
+        const session = await initializeLanguageModel();
+        const stream = session.promptStreaming(prompt);
+
+        let previousLength = 0;
+
+        for await (const chunk of stream) {
+            const newContent = chunk.slice(previousLength);
+            previousLength = chunk.length;
+
+            // Check if port is still connected before sending
+            if (port) {
+                try {
+                    port.postMessage({
+                        type: 'chunk',
+                        content: newContent
+                    });
+                } catch (e) {
+                    console.error('Port disconnected:', e);
+                    break;
+                }
+            } else {
+                break;
+            }
+        }
+
+        if (port) {
+            port.postMessage({ type: 'done' });
+        }
+    } catch (error) {
+        console.error('Error in language model:', error);
+        if (port) {
+            port.postMessage({
+                type: 'error',
+                error: error.message
+            });
+        }
+    }
+}
+
+// Initialize both models when service worker starts
+Promise.all([initializeModel(), initializeLanguageModel()]).catch(console.error);
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === 'getEmbeddings') {
@@ -68,5 +126,33 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             sendResponse({ embeddings: Array.from(await embeddings.array()) });
         });
         return true;
+    }
+
+    // Fallback for streaming if connection fails
+    if (request.action === 'streamingFallback') {
+        handleStreamingResponse(request.prompt, {
+            postMessage: (msg) => {
+                try {
+                    sendResponse(msg);
+                } catch (e) {
+                    console.error('Failed to send response:', e);
+                }
+            }
+        });
+        return true;
+    }
+});
+
+chrome.runtime.onConnect.addListener((port) => {
+    if (port.name === 'streamingResponse') {
+        port.onMessage.addListener((request) => {
+            if (request.action === 'startStreaming') {
+                handleStreamingResponse(request.prompt, port);
+            }
+        });
+
+        port.onDisconnect.addListener(() => {
+            console.log('Port disconnected');
+        });
     }
 });
