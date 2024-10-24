@@ -1993,7 +1993,7 @@ async function createIndex(items) {
 async function searchIndex(index, query, topK = 3) {
     const queryEmbedding = await getEmbeddings(query);
     const results = await index.search(queryEmbedding[0], { topK: topK });
-    return results.map(result => result.object.name).join('\n');
+    return results.map(result => result.object.name);
 }
 
 export { createIndex, searchIndex };
