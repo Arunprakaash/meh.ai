@@ -111,14 +111,15 @@ async function sendMessage() {
 
     try {
         const context = await searchIndex(embeddingIndex, userMessage, 2);
-        const prompt = `You are an assistant for question-answering tasks. 
-        Use the following pieces of retrieved context to answer the question. 
-        If you don't know the answer, just say that you don't know. 
-        Keep the answer concise.
-        Question: ${userMessage}
-        Context: ${context}
-        Answer:`;
+        const prompt = `You are an assistant for question-answering tasks. Use the following pieces of retrieved context to answer the question. If you don't know the answer, just say that you don't know. Use three sentences maximum and keep the answer concise.
 
+Question: ${userMessage}
+
+Context: ${context}
+        
+Answer:`;
+
+        console.log(prompt);
         // Create a new message element for the bot's response
         const botMessageElement = document.createElement('div');
         botMessageElement.classList.add('chat-message', 'bot');

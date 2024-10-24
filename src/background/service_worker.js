@@ -31,7 +31,7 @@ async function extractPageContent(tabId) {
     chrome.storage.session.set({ pageContent: injection[0].result });
 }
 
-async function initializeModel() {
+async function initializeEmbeddingModel() {
     if (model) return model;
     if (modelLoading) return modelLoading;
 
@@ -65,14 +65,16 @@ async function initializeModel() {
 }
 
 async function getEmbeddings(sentences) {
-    const model = await initializeModel();
+    const model = await initializeEmbeddingModel();
     return await model.embed(sentences);
 }
 
 async function initializeLanguageModel() {
     if (!languageModelSession) {
-        languageModelSession = await ai.languageModel.create();
+        languageModelSession = await ai.languageModel.create({
+        });
     }
+    languageModelSession = await languageModelSession.clone();
     return languageModelSession;
 }
 
@@ -118,7 +120,7 @@ async function handleStreamingResponse(prompt, port) {
 }
 
 // Initialize both models when service worker starts
-Promise.all([initializeModel(), initializeLanguageModel()]).catch(console.error);
+Promise.all([initializeEmbeddingModel(), initializeLanguageModel()]).catch(console.error);
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === 'getEmbeddings') {
