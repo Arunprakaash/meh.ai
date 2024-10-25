@@ -204,3 +204,48 @@ body {
     background: var(--accent-primary);
     color: white;
 }
+
+/* Message content styling */
+.message-container {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 8px;
+}
+
+.sources-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-top: 6px;
+    border-radius: 4px;
+    margin-bottom: 4px;
+}
+
+.sources-label {
+    color: var(--text-primary);
+    font-size: 0.9em;
+}
+
+.sources-list {
+    display: flex;
+    gap: 4px;
+}
+
+.source-button {
+    border-bottom-left-radius: 0.25rem;
+    border: 1px solid var(--border-color);
+    background: var(--message-bot);
+    color: var(--text-primary);
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 0.7em;
+}
+
+.source-button:hover {
+    background: var(--bg-primary);
+}
