@@ -4,7 +4,6 @@ let model;
 let modelLoading;
 let languageModelSession;
 
-// Ensure service worker stays active
 self.addEventListener('install', (event) => {
     event.waitUntil(self.skipWaiting());
 });
@@ -119,7 +118,6 @@ async function handleStreamingResponse(prompt, port) {
     }
 }
 
-// Initialize both models when service worker starts
 Promise.all([initializeEmbeddingModel(), initializeLanguageModel()]).catch(console.error);
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
@@ -130,7 +128,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         return true;
     }
 
-    // Fallback for streaming if connection fails
     if (request.action === 'streamingFallback') {
         handleStreamingResponse(request.prompt, {
             postMessage: (msg) => {

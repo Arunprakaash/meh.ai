@@ -1975,13 +1975,17 @@ async function getEmbeddings(chunks) {
 
 async function createIndex(items) {
     try {
-        const embeddings = await getEmbeddings(items);
-
-        const data = items.map((chunk, index) => ({
+        const pageContent = items?.children;
+        const contents = pageContent.map(item => item.content);
+        const embeddings = await getEmbeddings(contents);
+        console.log(pageContent);
+        const data = pageContent.map((item, index) => ({
             id: index,
-            name: chunk,
-            embedding: embeddings[index]
+            name: item.content,
+            embedding: embeddings[index],
+            metadata: item.children
         }));
+        console.log(data[0]);
 
         return new EmbeddingIndex(data);
     } catch (error) {
@@ -1993,7 +1997,7 @@ async function createIndex(items) {
 async function searchIndex(index, query, topK = 3) {
     const queryEmbedding = await getEmbeddings(query);
     const results = await index.search(queryEmbedding[0], { topK: topK });
-    return results.map(result => result.object.name);
+    return results;
 }
 
 export { createIndex, searchIndex };

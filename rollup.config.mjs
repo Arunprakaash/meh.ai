@@ -35,7 +35,6 @@ const copyPlugin = copy({
 export default [
     createConfig('src/background/service_worker.js'),
     createConfig('src/scripts/extract_content.js'),
-    createConfig('src/scripts/splitter.js'),
     createConfig('src/scripts/vector_store.js'),
     createConfig('src/scripts/highlight_chunks.js'),
     createConfig('src/sidepanel/index.js', [copyPlugin]),

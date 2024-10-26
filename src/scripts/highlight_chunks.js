@@ -1,55 +1,67 @@
 class TextChunkHighlighter {
     constructor() {
-        this.highlights = [];
+        this.highlightClass = 'ai-highlight';
+        this.highlightBackgroundColor = '#F3973A';
+        this.highlightColor = '#370E00';
+        this.currentHighlights = [];
     }
 
-    // Clear previous highlights before highlighting new chunks
     clearPreviousHighlights() {
-        this.removeHighlights();
+        const highlights = document.querySelectorAll(`.${this.highlightClass}`);
+        highlights.forEach(highlight => {
+            const parent = highlight.parentNode;
+            parent.replaceChild(document.createTextNode(highlight.textContent), highlight);
+            parent.normalize();
+        });
+        this.currentHighlights = [];
     }
 
-    // Find and highlight all occurrences of a text chunk
     highlightChunk(chunk) {
-        if (!chunk || typeof chunk !== 'string') return;
+        if (!chunk) return;
 
-        try {
-            const textNodes = this.findTextNodes(document.body);
-            const ranges = this.findTextInNodes(textNodes, chunk);
-
-            ranges.forEach(range => {
-                const highlightEl = document.createElement('mark');
-                highlightEl.style.backgroundColor = 'yellow';
-                highlightEl.style.color = 'black';
-                highlightEl.dataset.chunk = chunk; // Add data attribute for tracking
-
-                try {
-                    range.surroundContents(highlightEl);
-                    this.highlights.push(highlightEl);
-                } catch (e) {
-                    console.warn('Failed to highlight range:', e);
-                }
+        if (chunk.metadata && Array.isArray(chunk.metadata)) {
+            chunk.metadata.forEach(metadataItem => {
+                this.highlightMetadataContent(metadataItem);
             });
-        } catch (e) {
-            console.warn('Failed to process chunk:', e);
+        }
+        else if (chunk.metadata && chunk.metadata.content) {
+            this.highlightMetadataContent(chunk.metadata);
+        }
+        else if (chunk.name) {
+            this.highlightText(chunk.name);
+        }
+
+        this.scrollToFirstHighlight();
+    }
+
+    highlightMetadataContent(metadata) {
+        if (!metadata) return;
+
+        if (metadata.content) {
+            this.highlightText(metadata.content);
+        }
+
+        if (metadata.children && Array.isArray(metadata.children)) {
+            metadata.children.forEach(child => {
+                this.highlightMetadataContent(child);
+            });
         }
     }
 
-    // Find all text nodes in the document
-    findTextNodes(rootNode) {
-        const textNodes = [];
-        const walk = document.createTreeWalker(
-            rootNode,
+    highlightText(text) {
+        if (!text || typeof text !== 'string') return;
+
+        const walker = document.createTreeWalker(
+            document.body,
             NodeFilter.SHOW_TEXT,
             {
-                acceptNode: (currentNode) => {
-                    // Skip style, script, and chat interface content
-                    const parent = currentNode.parentNode;
-                    if (!parent) return NodeFilter.FILTER_REJECT;
-
-                    if (parent.tagName === 'SCRIPT' ||
+                acceptNode: function (node) {
+                    const parent = node.parentElement;
+                    if (parent && (
+                        parent.tagName === 'SCRIPT' ||
                         parent.tagName === 'STYLE' ||
-                        parent.closest('#chatMessages') || // Skip chat interface
-                        parent.closest('mark')) { // Skip already highlighted content
+                        parent.classList.contains('ai-highlight')
+                    )) {
                         return NodeFilter.FILTER_REJECT;
                     }
                     return NodeFilter.FILTER_ACCEPT;
@@ -57,57 +69,58 @@ class TextChunkHighlighter {
             }
         );
 
-        let currentNode = walk.nextNode();
-        while (currentNode) {
-            textNodes.push(currentNode);
-            currentNode = walk.nextNode();
+        const nodesToHighlight = [];
+        let currentNode;
+
+        while (currentNode = walker.nextNode()) {
+            if (currentNode.textContent.includes(text)) {
+                nodesToHighlight.push(currentNode);
+            }
         }
-        return textNodes;
-    }
 
-    // Find ranges where the text chunk appears
-    findTextInNodes(textNodes, searchText) {
-        const ranges = [];
-        const searchTextLower = searchText.toLowerCase().trim();
+        nodesToHighlight.forEach(node => {
+            const span = document.createElement('span');
+            span.className = this.highlightClass;
+            span.style.backgroundColor = this.highlightBackgroundColor;
+            span.style.color = this.highlightColor;
 
-        if (!searchTextLower) return ranges;
+            const regex = new RegExp(this.escapeRegExp(text), 'gi');
+            const parts = node.textContent.split(regex);
 
-        textNodes.forEach(node => {
-            const nodeText = node.textContent;
-            let pos = nodeText.toLowerCase().indexOf(searchTextLower);
+            if (parts.length > 1) {
+                const fragment = document.createDocumentFragment();
 
-            while (pos !== -1) {
-                try {
-                    const range = document.createRange();
-                    range.setStart(node, pos);
-                    range.setEnd(node, pos + searchText.length);
-                    ranges.push(range);
-                } catch (e) {
-                    console.warn('Failed to create range:', e);
+                for (let i = 0; i < parts.length; i++) {
+                    fragment.appendChild(document.createTextNode(parts[i]));
+
+                    if (i < parts.length - 1) {
+                        const highlightSpan = span.cloneNode();
+                        highlightSpan.textContent = text;
+                        fragment.appendChild(highlightSpan);
+                        this.currentHighlights.push(highlightSpan);
+                    }
                 }
 
-                pos = nodeText.toLowerCase().indexOf(searchTextLower, pos + 1);
+                node.parentNode.replaceChild(fragment, node);
             }
         });
-
-        return ranges;
     }
 
-    // Remove all highlights
-    removeHighlights() {
-        this.highlights.forEach(highlight => {
-            if (highlight && highlight.parentNode) {
-                try {
-                    highlight.parentNode.replaceChild(
-                        document.createTextNode(highlight.textContent),
-                        highlight
-                    );
-                } catch (e) {
-                    console.warn('Failed to remove highlight:', e);
-                }
+    scrollToFirstHighlight() {
+        setTimeout(() => {
+            if (this.currentHighlights.length > 0) {
+                const firstHighlight = this.currentHighlights[0];
+                firstHighlight.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center',
+                    inline: 'center'
+                });
             }
-        });
-        this.highlights = [];
+        }, 100);
+    }
+
+    escapeRegExp(string) {
+        return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     }
 }
 
@@ -116,7 +129,9 @@ const highlighter = new TextChunkHighlighter();
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.action === 'highlight') {
         highlighter.clearPreviousHighlights();
-        message.chunks.forEach(chunk => highlighter.highlightChunk(chunk));
+        if (message.chunks) {
+            highlighter.highlightChunk(message.chunks);
+        }
         sendResponse({ success: true });
     }
     return true;

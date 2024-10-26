@@ -2465,18 +2465,50 @@ function requireReadability () {
 var readabilityExports = requireReadability();
 
 function canBeParsed(document) {
-    return readabilityExports.isProbablyReaderable(document, {
-        minContentLength: 100
+    return readabilityExports.isProbablyReaderable(document, { minContentLength: 100 });
+}
+
+function cleanNode(node) {
+    const scriptsAndStyles = node.querySelectorAll('script, style');
+    scriptsAndStyles.forEach(el => el.remove());
+}
+
+function processNode(node) {
+    if (node.nodeType !== Node.ELEMENT_NODE) return null;
+
+    const fullContent = node.textContent.trim();
+    const children = [];
+
+    node.childNodes.forEach(child => {
+        const processedChild = processNode(child);
+        if (processedChild) children.push(processedChild);
     });
-}
 
-function parse(document) {
-    if (!canBeParsed(document)) {
-        return false;
+    if (fullContent || children.length) {
+        return {
+            tag: node.tagName.toLowerCase(),
+            content: fullContent || undefined,
+            ...(children.length > 0 && { children })
+        };
     }
-    const documentClone = document.cloneNode(true);
-    const article = new readabilityExports.Readability(documentClone).parse();
-    return article.textContent;
+    return null;
 }
 
-parse(window.document);
+function extractWithTags(document) {
+    if (!canBeParsed(document)) return false;
+
+    const documentClone = document.cloneNode(true);
+    cleanNode(documentClone);
+
+    const article = new readabilityExports.Readability(documentClone, { keepClasses: true }).parse();
+    const container = document.createElement('div');
+    container.innerHTML = article.content;
+
+    const processedNodes = Array.from(container.childNodes)
+        .map(processNode)
+        .filter(Boolean);
+
+    return processedNodes.length ? processedNodes[0].children[0] : [];
+}
+
+extractWithTags(window.document);

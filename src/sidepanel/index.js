@@ -1,8 +1,7 @@
 import { marked } from 'marked';
-import { getChunks } from '../scripts/splitter';
 import { createIndex, searchIndex } from '../scripts/vector_store';
 
-let pageContent = '';
+let pageContent = null;
 let embeddingIndex = null;
 
 const chatMessages = document.getElementById('chatMessages');
@@ -30,11 +29,11 @@ function createSourcesContainer(sources) {
 }
 
 function highlightSource(source) {
-    // Send message to content script to highlight the source
+    console.log(source);
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
         chrome.tabs.sendMessage(tabs[0].id, {
             action: 'highlight',
-            chunks: [source]
+            chunks: source.object
         });
     });
 }
@@ -59,13 +58,11 @@ function updateMessageContent(elements, content, sources = []) {
     const { container, message } = elements;
     message.innerHTML = marked(content);
 
-    // Remove existing sources container if it exists
     const existingSources = container.querySelector('.sources-container');
     if (existingSources) {
         container.removeChild(existingSources);
     }
 
-    // Add sources container for bot messages if sources are provided
     if (sources.length > 0) {
         const sourcesContainer = createSourcesContainer(sources);
         container.appendChild(sourcesContainer, message);
@@ -158,14 +155,13 @@ async function sendMessage() {
         return;
     }
 
-    // Display user message
     const userElements = appendMessageElement('user');
     updateMessageContent(userElements, userMessage);
     chatInput.value = '';
     setLoadingState(true);
 
     try {
-        const context = await searchIndex(embeddingIndex, userMessage, 2);
+        const results = await searchIndex(embeddingIndex, userMessage, 5);
         const prompt = `You are an assistant for question-answering tasks. 
 Use the following pieces of retrieved context to answer the question. 
 If you don't know the answer, just say that you don't know. 
@@ -173,17 +169,17 @@ keep the answer concise.
 
 Question: ${userMessage}
 
-Context: ${context.join('\n')}
-        
+Context: ${results.map(context => context.object.name).join('\n')}
+
 Answer:`;
 
         const botElements = appendMessageElement('bot');
 
         try {
-            await tryConnectToWorker(prompt, botElements, context);
+            await tryConnectToWorker(prompt, botElements, results);
         } catch (connectionError) {
             console.log('Connection failed, falling back to message passing:', connectionError);
-            await fallbackToMessagePassing(prompt, botElements, context);
+            await fallbackToMessagePassing(prompt, botElements, results);
         }
 
     } catch (error) {
@@ -196,7 +192,7 @@ Answer:`;
 }
 
 async function onContentChange(newContent) {
-    if (pageContent === newContent || !newContent) {
+    if (pageContent === newContent?.content || !newContent) {
         if (!newContent) {
             const elements = appendMessageElement('bot', true);
             updateMessageContent(elements, "There's no content to process.");
@@ -204,14 +200,13 @@ async function onContentChange(newContent) {
         return;
     }
 
-    pageContent = newContent;
+    pageContent = newContent?.content;
     setLoadingState(true);
     const statusElements = appendMessageElement('bot', true);
     updateMessageContent(statusElements, 'Processing content...');
 
     try {
-        const chunks = await getChunks(newContent);
-        embeddingIndex = await createIndex(chunks);
+        embeddingIndex = await createIndex(newContent);
         updateMessageContent(statusElements, "Content processed and indexed. You can now ask questions about the page.");
     } catch (error) {
         console.error('Error processing content:', error);
@@ -221,7 +216,6 @@ async function onContentChange(newContent) {
     }
 }
 
-// Event listeners
 document.addEventListener('DOMContentLoaded', () => {
     sendButton.addEventListener('click', sendMessage);
     chatInput.addEventListener('keydown', (event) => {
@@ -229,7 +223,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-// Chrome storage handling
 if (typeof chrome !== 'undefined' && chrome.storage) {
     chrome.storage.session.get('pageContent', ({ pageContent: content }) => {
         onContentChange(content);
