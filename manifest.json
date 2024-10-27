@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
-    "name": "Murmux.ai",
-    "version": "0.0.1",
+    "name": "murmux.ai",
+    "version": "0.1.0",
     "description": "brings a playful twist to page interaction, letting users frolic through questions and content with ease.",
     "permissions": [
         "tabs",
@@ -31,5 +31,10 @@
     },
     "action": {
         "default_title": "Murmux.ai"
+    },
+    "icons": {
+        "16": "icons/icon16.png",
+        "48": "icons/icon48.png",
+        "128": "icons/icon128.png"
     }
 }

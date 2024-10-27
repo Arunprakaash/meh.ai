@@ -28,7 +28,8 @@ const copyPlugin = copy({
     targets: [
         { src: 'manifest.json', dest: 'dist' },
         { src: 'src/sidepanel/index.html', dest: 'dist/src/sidepanel/' },
-        { src: 'src/sidepanel/styles.css', dest: 'dist/src/sidepanel/' }
+        { src: 'src/sidepanel/styles.css', dest: 'dist/src/sidepanel/' },
+        { src: 'icons/', dest: 'dist/' }
     ]
 });
 

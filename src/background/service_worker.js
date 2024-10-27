@@ -88,7 +88,6 @@ async function handleStreamingResponse(prompt, port) {
             const newContent = chunk.slice(previousLength);
             previousLength = chunk.length;
 
-            // Check if port is still connected before sending
             if (port) {
                 try {
                     port.postMessage({
