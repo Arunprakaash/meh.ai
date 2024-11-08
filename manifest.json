@@ -16,16 +16,6 @@
         "service_worker": "src/background/service_worker.js",
         "type": "module"
     },
-    "content_scripts": [
-        {
-            "matches": [
-                "<all_urls>"
-            ],
-            "js": [
-                "src/scripts/highlight_chunks.js"
-            ]
-        }
-    ],
     "side_panel": {
         "default_path": "src/sidepanel/index.html"
     },

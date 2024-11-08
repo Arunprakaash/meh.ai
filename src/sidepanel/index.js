@@ -1,7 +1,8 @@
 import { marked } from 'marked';
+import { getChunks } from '../scripts/text_splitter';
 import { createIndex, searchIndex } from '../scripts/vector_store';
 
-let pageContent = null;
+let pageContent = '';
 let embeddingIndex = null;
 
 const chatMessages = document.getElementById('chatMessages');
@@ -20,7 +21,10 @@ function createSourcesContainer(sources) {
         const sourceButton = document.createElement('button');
         sourceButton.classList.add('source-button');
         sourceButton.textContent = index + 1;
-        sourceButton.onclick = () => highlightSource(source);
+        sourceButton.onclick = () => {
+            const sourceText = source.object.name;
+            alert(sourceText);
+        };
         sourcesList.appendChild(sourceButton);
     });
 
@@ -28,15 +32,6 @@ function createSourcesContainer(sources) {
     return sourcesContainer;
 }
 
-function highlightSource(source) {
-    console.log(source);
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-        chrome.tabs.sendMessage(tabs[0].id, {
-            action: 'highlight',
-            chunks: source.object
-        });
-    });
-}
 
 function appendMessageElement(type = 'bot', clearPrevious = false) {
     if (clearPrevious) {
@@ -162,10 +157,10 @@ async function sendMessage() {
 
     try {
         const results = await searchIndex(embeddingIndex, userMessage, 5);
+        console.log(results);
         const prompt = `You are an assistant for question-answering tasks. 
-Use the following pieces of retrieved context to answer the question. 
-If you don't know the answer, just say that you don't know. 
-keep the answer concise.
+Use the following pieces of retrieved context to answer the question.
+Use six sentences maximum and keep the answer concise.
 
 Question: ${userMessage}
 
@@ -192,7 +187,7 @@ Answer:`;
 }
 
 async function onContentChange(newContent) {
-    if (pageContent === newContent?.content || !newContent) {
+    if (pageContent === newContent || !newContent) {
         if (!newContent) {
             const elements = appendMessageElement('bot', true);
             updateMessageContent(elements, "There's no content to process.");
@@ -200,13 +195,14 @@ async function onContentChange(newContent) {
         return;
     }
 
-    pageContent = newContent?.content;
+    pageContent = newContent;
     setLoadingState(true);
     const statusElements = appendMessageElement('bot', true);
     updateMessageContent(statusElements, 'Processing content...');
 
     try {
-        embeddingIndex = await createIndex(newContent);
+        const chunks = await getChunks(newContent);
+        embeddingIndex = await createIndex(chunks);
         updateMessageContent(statusElements, "Content processed and indexed. You can now ask questions about the page.");
     } catch (error) {
         console.error('Error processing content:', error);

@@ -1,16 +1,9 @@
 import * as use from '@tensorflow-models/universal-sentence-encoder';
 import * as tf from '@tensorflow/tfjs';
+
 let model;
 let modelLoading;
 let languageModelSession;
-
-self.addEventListener('install', (event) => {
-    event.waitUntil(self.skipWaiting());
-});
-
-self.addEventListener('activate', (event) => {
-    event.waitUntil(self.clients.claim());
-});
 
 chrome.sidePanel
     .setPanelBehavior({ openPanelOnActionClick: true })
@@ -27,6 +20,7 @@ async function extractPageContent(tabId) {
         target: { tabId },
         files: ['src/scripts/extract_content.js']
     });
+    console.log(injection[0].result);
     chrome.storage.session.set({ pageContent: injection[0].result });
 }
 

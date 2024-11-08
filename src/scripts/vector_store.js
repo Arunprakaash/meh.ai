@@ -14,17 +14,12 @@ async function getEmbeddings(chunks) {
 
 async function createIndex(items) {
     try {
-        const pageContent = items?.children
-        const contents = pageContent.map(item => item.content);
-        const embeddings = await getEmbeddings(contents);
-        console.log(pageContent);
-        const data = pageContent.map((item, index) => ({
+        const embeddings = await getEmbeddings(items);
+        const data = items.map((chunk, index) => ({
             id: index,
-            name: item.content,
-            embedding: embeddings[index],
-            metadata: item.children
+            name: chunk,
+            embedding: embeddings[index]
         }));
-        console.log(data[0]);
 
         return new EmbeddingIndex(data);
     } catch (error) {
