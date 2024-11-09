@@ -27010,6 +27010,12 @@ async function searchIndex(index, query, topK = 3) {
 
 let pageContent = '';
 let embeddingIndex = null;
+marked.setOptions({
+    gfm: true,
+    breaks: true,
+    smartLists: true,
+    smartypants: true
+});
 
 const chatMessages = document.getElementById('chatMessages');
 const chatInput = document.getElementById('chatInput');
@@ -27027,6 +27033,7 @@ function createSourcesContainer(sources) {
         const sourceButton = document.createElement('button');
         sourceButton.classList.add('source-button');
         sourceButton.textContent = index + 1;
+        sourceButton.title = source.object.name;
         sourceButton.onclick = () => {
             const sourceText = source.object.name;
             alert(sourceText);
@@ -27057,7 +27064,7 @@ function appendMessageElement(type = 'bot', clearPrevious = false) {
 
 function updateMessageContent(elements, content, sources = []) {
     const { container, message } = elements;
-    message.innerHTML = marked(content);
+    message.innerHTML = marked(content, { sanitize: true });
 
     const existingSources = container.querySelector('.sources-container');
     if (existingSources) {
@@ -27163,10 +27170,9 @@ async function sendMessage() {
 
     try {
         const results = await searchIndex(embeddingIndex, userMessage, 5);
-        console.log(results);
         const prompt = `You are an assistant for question-answering tasks. 
 Use the following pieces of retrieved context to answer the question.
-Use six sentences maximum and keep the answer concise.
+Use five sentences maximum and keep the answer concise.
 
 Question: ${userMessage}
 

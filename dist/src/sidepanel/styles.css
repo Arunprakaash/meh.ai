@@ -57,6 +57,95 @@ body {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
+/* Markdown-specific styles */
+.chat-message ul,
+.chat-message ol {
+    margin: 0.5rem 0;
+    padding-left: 2rem;
+}
+
+.chat-message ul li,
+.chat-message ol li {
+    margin-bottom: 0.5rem;
+    padding-left: 0.5rem;
+}
+
+.chat-message ul li::marker {
+    color: var(--text-primary);
+}
+
+/* Handle nested lists */
+.chat-message ul ul,
+.chat-message ol ol,
+.chat-message ul ol,
+.chat-message ol ul {
+    margin: 0.5rem 0;
+}
+
+/* Paragraphs in markdown */
+.chat-message p {
+    margin-bottom: 1rem;
+}
+
+.chat-message p:last-child {
+    margin-bottom: 0;
+}
+
+/* Code blocks */
+.chat-message pre {
+    background: var(--bg-tertiary);
+    padding: 1rem;
+    border-radius: 0.5rem;
+    overflow-x: auto;
+    margin: 0.5rem 0;
+}
+
+.chat-message code {
+    font-family: monospace;
+    background: var(--bg-tertiary);
+    padding: 0.2rem 0.4rem;
+    border-radius: 0.25rem;
+    font-size: 0.875em;
+}
+
+.chat-message pre code {
+    padding: 0;
+    background: none;
+}
+
+/* Blockquotes */
+.chat-message blockquote {
+    border-left: 3px solid var(--accent-primary);
+    padding-left: 1rem;
+    margin: 1rem 0;
+    color: var(--text-secondary);
+}
+
+/* Tables */
+.chat-message table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 1rem 0;
+}
+
+.chat-message th,
+.chat-message td {
+    border: 1px solid var(--border-color);
+    padding: 0.5rem;
+    text-align: left;
+}
+
+.chat-message th {
+    background: var(--bg-tertiary);
+}
+
+/* Horizontal rule */
+.chat-message hr {
+    border: none;
+    border-top: 1px solid var(--border-color);
+    margin: 1rem 0;
+}
+
 .chat-message.user {
     background: var(--message-user);
     color: var(--text-primary);

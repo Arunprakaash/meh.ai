@@ -1,6 +1,6 @@
 {
     "manifest_version": 3,
-    "name": "murmux.ai",
+    "name": "meh.ai",
     "version": "0.1.0",
     "description": "brings a playful twist to page interaction, letting users frolic through questions and content with ease.",
     "permissions": [
@@ -20,7 +20,7 @@
         "default_path": "src/sidepanel/index.html"
     },
     "action": {
-        "default_title": "Murmux.ai"
+        "default_title": "meh.ai"
     },
     "icons": {
         "16": "icons/icon16.png",

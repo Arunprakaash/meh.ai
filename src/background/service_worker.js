@@ -20,7 +20,6 @@ async function extractPageContent(tabId) {
         target: { tabId },
         files: ['src/scripts/extract_content.js']
     });
-    console.log(injection[0].result);
     chrome.storage.session.set({ pageContent: injection[0].result });
 }
 
