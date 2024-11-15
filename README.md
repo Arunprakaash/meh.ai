@@ -5,7 +5,7 @@ A Playful Approach to Page Interaction
 
 ### Demo & Installation
 
-**Check out a demo here:** [https://youtu.be/WheV_P6_Qww](https://youtu.be/WheV_P6_Qww)
+**Check out a demo here:** [https://www.youtube.com/watch?v=sB2bhBTzYPM](https://www.youtube.com/watch?v=sB2bhBTzYPM)
 
 **Install the extension (development version):**
 
@@ -79,4 +79,4 @@ Follow these steps to enable Gemini Nano and the Prompt API flags for local expe
 
 **This project is still in development.** 
 
-[![meh.ai Video](https://img.youtube.com/vi/WheV_P6_Qww/0.jpg)](https://youtu.be/WheV_P6_Qww?si=2ONO2Tunx1YFtos6 "meh.ai Video")
+[![meh.ai Video](https://img.youtube.com/vi/sB2bhBTzYPM/0.jpg)](https://www.youtube.com/watch?v=sB2bhBTzYPM "meh.ai Video")
